@@ -38,7 +38,7 @@ endif()
 add_subdirectory(src)
 
 if( ShapePopulationViewer_BUILD_SLICER_EXTENSION )
-  set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
+  set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};RuntimeLibraries;/")
   # Since SlicerExtensionCPack module considers an extension as "Superbuild" if ${LOCAL_PROJECT_NAME}_SUPERBUILD
   # is defined, let's undefine the variable here. Indeed, when built against Slicer, the extension does not have
   # a superbuild structure.

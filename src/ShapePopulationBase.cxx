@@ -849,11 +849,17 @@ void ShapePopulationBase::UpdateColorMapByMagnitude(std::vector< unsigned int > 
     {
         //Look Up table
         vtkSmartPointer<vtkColorTransferFunction> DistanceMapTFunc = vtkSmartPointer<vtkColorTransferFunction>::New();
+#ifndef ShapePopulationViewer_BUILD_SLICER_EXTENSION
         double range = fabs(m_usedColorBar->range[1] - m_usedColorBar->range[0]);
+#endif
         for (unsigned int j = 0; j < m_usedColorBar->colorPointList.size(); j++)
         {
+#ifndef ShapePopulationViewer_BUILD_SLICER_EXTENSION
             double position = m_usedColorBar->colorPointList[j].pos;
             double x = m_usedColorBar->range[0] + range * position;
+#else
+            double x = m_usedColorBar->colorPointList[j].pos;
+#endif
             double r = m_usedColorBar->colorPointList[j].r;
             double g = m_usedColorBar->colorPointList[j].g;
             double b = m_usedColorBar->colorPointList[j].b;

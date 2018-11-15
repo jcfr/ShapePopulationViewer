@@ -109,13 +109,13 @@ protected:
     void dropEvent(QDropEvent* Qevent);
 
     // UPDATES & DISPLAY INFO
-    void updateColorbar_QT();
     void UpdateColorMapByDirection_QT();
     void updateAttribute_QT();
     void updateArrowPosition();
     void updateInfo_QT();
 
-    protected slots:
+protected slots:
+    void updateColorbar_QT();
 
     void on_pushButton_displayTools_clicked();
 
@@ -196,20 +196,24 @@ protected:
     void on_pushButton_VISU_resetRange_clicked();
     void on_spinBox_VISU_max_Dir_valueChanged(double newXmax);
     void on_pushButton_VISU_resetRange_Dir_clicked();
+#ifndef ShapePopulationViewer_BUILD_SLICER_EXTENSION
     // arrows of the gradient widget
     void on_spinBox_VISU_position_valueChanged(double arg1);
     void on_pushButton_VISU_delete_clicked();
     void on_pushButton_VISU_add_clicked();
     void on_pushButton_VISU_reset_clicked();
+#endif
     // color map
     void on_radioButton_displayColorMapByMagnitude_toggled(bool checked);
     void on_radioButton_displayColorMapByDirection_toggled(bool checked);
 
+#ifndef ShapePopulationViewer_BUILD_SLICER_EXTENSION
     //slots for gradView signals
     void slot_gradArrow_moved(qreal newPos);
     void slot_gradArrow_selected(qreal newPos);
     void slot_gradArrow_doubleClicked();
     void slot_no_gradArrow_selected();
+#endif
 
     //VECTORS
     void on_slider_meshOpacity_valueChanged(int value);

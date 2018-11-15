@@ -3,8 +3,14 @@
 
 // MRML includes
 #ifdef ShapePopulationViewer_BUILD_SLICER_EXTENSION
-# include <vtkMRMLModelNode.h>
+#include <vtkMRMLModelNode.h>
+#include <ctkVTKScalarsToColorsView.h>
+#include <ctkVTKScalarsToColorsWidget.h>
+#include <vtkContextScene.h>
 #endif
+
+// VTK includes
+#include <vtkMathUtilities.h>
 
 ShapePopulationQT::ShapePopulationQT(QWidget* parent) : QWidget(parent)
 {
@@ -102,11 +108,16 @@ ShapePopulationQT::ShapePopulationQT(QWidget* parent) : QWidget(parent)
 #else
     connect(m_exportActions,SIGNAL(triggered(QAction*)),this,SLOT(showNoExportWindow()));
 #endif
+#ifdef ShapePopulationViewer_BUILD_SLICER_EXTENSION
+    widget_VISU_arrowOptions->setVisible(false);
+    connect(gradientWidget_VISU, SIGNAL(colorsChanged()), this, SLOT(updateColorbar_QT()));
+#else
     //gradView Signals
     connect(gradientWidget_VISU,SIGNAL(arrowMovedSignal(qreal)), this, SLOT(slot_gradArrow_moved(qreal)));
     connect(gradientWidget_VISU,SIGNAL(arrowSelectedSignal(qreal)), this, SLOT(slot_gradArrow_selected(qreal)));
     connect(gradientWidget_VISU,SIGNAL(arrowDoubleClickedSignal()), this, SLOT(slot_gradArrow_doubleClicked()));
     connect(gradientWidget_VISU,SIGNAL(noSelectionSignal()), this, SLOT(slot_no_gradArrow_selected()));
+#endif
 
     //backgroundDialog signals
     connect(m_backgroundDialog,SIGNAL(sig_selectedColor_valueChanged(QColor)), this, SLOT(slot_selectedColor_valueChanged(QColor)));
@@ -209,7 +220,7 @@ void ShapePopulationQT::loadModel(vtkMRMLModelNode* modelNode)
 
     CreateWidgets(renderWindows);
 #else
-    Q_ASSERT(modelNode);
+    Q_UNUSED(modelNode);
 #endif
 }
 
@@ -480,11 +491,26 @@ void ShapePopulationQT::deleteSelection()
                 {
                     if(cmap == m_commonAttributes[i].c_str()) index = i;
                     colorBarStruct * colorBar = new colorBarStruct;                         //new colorbar for this attribute
+#ifndef ShapePopulationViewer_BUILD_SLICER_EXTENSION
                     gradientWidget_VISU->reset();                                           //create points
                     gradientWidget_VISU->getAllColors(&colorBar->colorPointList);           //get the points into the colorbar
+#endif
                     this->UpdateAttribute(m_commonAttributes[i].c_str(), m_selectedIndex);  //create the range
                     colorBar->range[0] = m_commonRange[0];                                  //get the range into the colorbar
                     colorBar->range[1] = m_commonRange[1];
+#ifdef ShapePopulationViewer_BUILD_SLICER_EXTENSION
+                    if (vtkMathUtilities::FuzzyCompare<double>(colorBar->range[0], colorBar->range[1], 1e5))
+                    {
+                        colorBar->range[0]-=1e-2;
+                        colorBar->range[1]+=1e-2;
+                    }
+                    double range_min = colorBar->range[0];
+                    double range_max = colorBar->range[1];
+                    double center = (range_max - range_min) / 2.0 + range_min;
+                    colorBar->colorPointList.push_back(colorPointStruct(range_min, Qt::green));
+                    colorBar->colorPointList.push_back(colorPointStruct(center, Qt::yellow));
+                    colorBar->colorPointList.push_back(colorPointStruct(range_max, Qt::red));
+#endif
                     m_colorBarList.push_back(colorBar);                                     //add the colorbar to the list
 
                     comboBox_VISU_attribute->addItem(QString(m_commonAttributes[i].c_str()));   // Then add the attribute to the comboBox
@@ -1037,11 +1063,26 @@ void ShapePopulationQT::CreateWidgets(const QList<vtkRenderWindow*>& renderWindo
     for(unsigned int i = 0 ; i < m_commonAttributes.size() ; i++)
     {
         colorBarStruct * colorBar = new colorBarStruct;                         //new colorbar for this attribute
+#ifndef ShapePopulationViewer_BUILD_SLICER_EXTENSION
         gradientWidget_VISU->reset();                                           //create points
         gradientWidget_VISU->getAllColors(&colorBar->colorPointList);           //get the points into the colorbar
+#endif
         this->UpdateAttribute(m_commonAttributes[i].c_str(), m_selectedIndex);  //create the range
         colorBar->range[0] = m_commonRange[0];                                  //get the range into the colorbar
         colorBar->range[1] = m_commonRange[1];
+#ifdef ShapePopulationViewer_BUILD_SLICER_EXTENSION
+        if (vtkMathUtilities::FuzzyCompare<double>(colorBar->range[0], colorBar->range[1], 1e5))
+        {
+            colorBar->range[0]-=1e-2;
+            colorBar->range[1]+=1e-2;
+        }
+        double range_min = colorBar->range[0];
+        double range_max = colorBar->range[1];
+        double center = (range_max - range_min) / 2.0 + range_min;
+        colorBar->colorPointList.push_back(colorPointStruct(range_min, Qt::green));
+        colorBar->colorPointList.push_back(colorPointStruct(center, Qt::yellow));
+        colorBar->colorPointList.push_back(colorPointStruct(range_max, Qt::red));
+#endif
         m_colorBarList.push_back(colorBar);                                     //add the colorbar to the list
 
         comboBox_VISU_attribute->addItem(QString(m_commonAttributes[i].c_str()));   // Then add the attribute to the comboBox
@@ -1718,6 +1759,13 @@ void ShapePopulationQT::on_comboBox_VISU_attribute_currentIndexChanged(int)
         // Change the colorbar selected
         m_usedColorBar = m_colorBarList[index]; //the colorbar depends of the attribute
         this->gradientWidget_VISU->setAllColors(&m_usedColorBar->colorPointList);
+
+#ifdef ShapePopulationViewer_BUILD_SLICER_EXTENSION
+        this->gradientWidget_VISU->updateRange(m_usedColorBar->range[0], m_usedColorBar->range[1]);
+        this->gradientWidget_VISU->setFocusIndex(1);
+        this->gradientWidget_VISU->view()->scene()->SetDirty(true);
+#endif
+
         m_noChange = true;
         spinBox_VISU_min->setValue(m_usedColorBar->range[0]);
         spinBox_VISU_max->setValue(m_usedColorBar->range[1]);
@@ -1854,6 +1902,9 @@ void ShapePopulationQT::UpdateColorMapByDirection_QT()
 
 void ShapePopulationQT::updateArrowPosition()
 {
+#ifdef ShapePopulationViewer_BUILD_SLICER_EXTENSION
+    this->gradientWidget_VISU->updateRange(m_usedColorBar->range[0], m_usedColorBar->range[1]);
+#else
     m_updateOnPositionChanged = false;
 
     // Update Spinbox ranges
@@ -1867,6 +1918,7 @@ void ShapePopulationQT::updateArrowPosition()
     this->slot_gradArrow_moved(newPos);
 
     m_updateOnPositionChanged = true;
+#endif
 }
 
 
@@ -1882,6 +1934,9 @@ void ShapePopulationQT::on_spinBox_VISU_min_valueChanged(double min)
         m_usedColorBar->range[0] = min;
         this->updateColorbar_QT();
         this->updateArrowPosition();
+#ifdef ShapePopulationViewer_BUILD_SLICER_EXTENSION
+        this->gradientWidget_VISU->updateRange(min, spinBox_VISU_max->value());
+#endif
     }
 }
 
@@ -1897,6 +1952,9 @@ void ShapePopulationQT::on_spinBox_VISU_max_valueChanged(double max)
         m_usedColorBar->range[1] = max;
         this->updateColorbar_QT();
         this->updateArrowPosition();
+#ifdef ShapePopulationViewer_BUILD_SLICER_EXTENSION
+        this->gradientWidget_VISU->updateRange(spinBox_VISU_min->value(), max);
+#endif
     }
 }
 
@@ -1953,7 +2011,7 @@ void ShapePopulationQT::on_pushButton_VISU_resetRange_Dir_clicked()
     m_noChange = false;
 }
 
-
+#ifndef ShapePopulationViewer_BUILD_SLICER_EXTENSION
 void ShapePopulationQT::on_pushButton_VISU_delete_clicked()
 {
     gradientWidget_VISU->deleteFocusArrow();
@@ -1995,6 +2053,8 @@ void ShapePopulationQT::on_pushButton_VISU_reset_clicked()
     gradientWidget_VISU->reset();
     this->updateColorbar_QT();
 }
+
+#endif
 
 void ShapePopulationQT::on_radioButton_displayColorMapByMagnitude_toggled(bool checked)
 {
@@ -2040,6 +2100,7 @@ void ShapePopulationQT::on_radioButton_displayColorMapByDirection_toggled(bool c
 // *                                         COLOR ARROWS                                          * //
 // * ///////////////////////////////////////////////////////////////////////////////////////////// * //
 
+#ifndef ShapePopulationViewer_BUILD_SLICER_EXTENSION
 void ShapePopulationQT::slot_gradArrow_moved(qreal newPos)
 {
     //Get the absolute position of the arrow
@@ -2079,7 +2140,7 @@ void ShapePopulationQT::slot_no_gradArrow_selected()
     pushButton_VISU_delete->setDisabled(true);
     spinBox_VISU_position->setDisabled(true);
 }
-
+#endif
 
 // * ///////////////////////////////////////////////////////////////////////////////////////////// * //
 // *                                             INFO                                              * //

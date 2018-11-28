@@ -48,8 +48,6 @@ class ShapePopulationBase
 
     void KeyPressEventVTK(vtkObject* a_selectedObject, unsigned long, void*);
     void CameraChangedEventVTK(vtkObject*, unsigned long, void*);
-    void StartEventVTK(vtkObject*, unsigned long, void*);
-    void EndEventVTK(vtkObject*, unsigned long, void*);
 
     protected :
 
@@ -63,7 +61,7 @@ class ShapePopulationBase
     std::vector<std::string> m_commonAttributes;
     colorBarStruct * m_usedColorBar;
     std::vector< colorBarStruct *> m_colorBarList;
-    bool m_renderAllSelection;
+    bool m_renderingAllSelection;
     std::vector<bool> m_displayColorMapByMagnitude;
     std::vector<bool> m_displayColorMapByDirection;
     std::vector<bool> m_displayVectors;

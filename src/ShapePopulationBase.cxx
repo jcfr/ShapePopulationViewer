@@ -42,7 +42,7 @@ ShapePopulationBase::ShapePopulationBase()
     m_labelColor[0] = 1.0;
     m_labelColor[1] = 1.0;
     m_labelColor[2] = 1.0;
-    m_renderAllSelection = false; //changed
+    m_renderingAllSelection = false;
     m_displayColorbar = true;
     m_displayAttribute = true;
     m_displayMeshName = true;
@@ -347,10 +347,7 @@ void ShapePopulationBase::ClickEvent(vtkObject* a_selectedObject, unsigned long,
         if(dim == 1) this->UpdateColorMapByMagnitude(m_selectedIndex);
     }
 
-
-    m_renderAllSelection = true;
     this->RenderSelection();
-    m_renderAllSelection = false;
 }
 
 void ShapePopulationBase::SelectAll()
@@ -414,16 +411,6 @@ void ShapePopulationBase::CameraChangedEventVTK(vtkObject*, unsigned long, void*
     this->UpdateCameraConfig();
 }
 
-void ShapePopulationBase::StartEventVTK(vtkObject*, unsigned long, void*)
-{
-    m_renderAllSelection = true;
-}
-
-void ShapePopulationBase::EndEventVTK(vtkObject*, unsigned long, void*)
-{
-    m_renderAllSelection = false;
-}
-
 
 // * ///////////////////////////////////////////////////////////////////////////////////////////// * //
 // *                                           RENDERING                                           * //
@@ -439,15 +426,14 @@ void ShapePopulationBase::RenderAll()
 
 void ShapePopulationBase::RenderSelection()
 {
-    if(m_selectedIndex.size()==0 || m_renderAllSelection == false) return;
+    if(m_selectedIndex.size()==0 || m_renderingAllSelection) return;
 
-    bool saved_renderAllSelection = m_renderAllSelection;
-    m_renderAllSelection = false;
+    m_renderingAllSelection = true;
     for (unsigned int i = 0; i < m_selectedIndex.size();i++) //render all windows selected (one of them will be the event window)
     {
         m_windowsList[m_selectedIndex[i]]->Render();
     }
-    m_renderAllSelection = saved_renderAllSelection;
+    m_renderingAllSelection = false;
 
     //this->sendCameraConfig();
 }
@@ -1502,9 +1488,7 @@ void ShapePopulationBase::ChangeView(int R, int A, int S,int x_ViewUp,int y_View
     // View Up
     firstRenderer->GetActiveCamera()->SetViewUp(x_ViewUp,y_ViewUp,z_ViewUp);
 
-    m_renderAllSelection = true;
     this->RenderSelection();
-    m_renderAllSelection = false;
     this->UpdateCameraConfig();
 
 }

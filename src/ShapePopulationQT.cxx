@@ -845,80 +845,60 @@ void ShapePopulationQT::slot_position_x_valueChanged(double arg1)
 {
     double * position = m_headcam->GetPosition();
     m_headcam->SetPosition(arg1,position[1],position[2]);
-    m_renderAllSelection = true;
     this->RenderSelection();
-    m_renderAllSelection = false;
 }
 void ShapePopulationQT::slot_position_y_valueChanged(double arg1)
 {
     double * position = m_headcam->GetPosition();
     m_headcam->SetPosition(position[0],arg1,position[2]);
-    m_renderAllSelection = true;
     this->RenderSelection();
-    m_renderAllSelection = false;
 }
 void ShapePopulationQT::slot_position_z_valueChanged(double arg1)
 {
     double * position = m_headcam->GetPosition();
     m_headcam->SetPosition(position[0],position[1],arg1);
-    m_renderAllSelection = true;
     this->RenderSelection();
-    m_renderAllSelection = false;
 }
 void ShapePopulationQT::slot_focalpoint_x_valueChanged(double arg1)
 {
     double * focalpoint = m_headcam->GetFocalPoint();
     m_headcam->SetFocalPoint(arg1,focalpoint[1],focalpoint[2]);
-    m_renderAllSelection = true;
     this->RenderSelection();
-    m_renderAllSelection = false;
 }
 void ShapePopulationQT::slot_focalpoint_y_valueChanged(double arg1)
 {
     double * focalpoint = m_headcam->GetFocalPoint();
     m_headcam->SetFocalPoint(focalpoint[0],arg1,focalpoint[2]);
-    m_renderAllSelection = true;
     this->RenderSelection();
-    m_renderAllSelection = false;
 }
 void ShapePopulationQT::slot_focalpoint_z_valueChanged(double arg1)
 {
     double * focalpoint = m_headcam->GetFocalPoint();
     m_headcam->SetFocalPoint(focalpoint[0],focalpoint[1],arg1);
-    m_renderAllSelection = true;
     this->RenderSelection();
-    m_renderAllSelection = false;
 }
 void ShapePopulationQT::slot_viewup_vx_valueChanged(double arg1)
 {
     double * viewup = m_headcam->GetViewUp();
     m_headcam->SetViewUp(arg1,viewup[1],viewup[2]);
-    m_renderAllSelection = true;
     this->RenderSelection();
-    m_renderAllSelection = false;
 }
 void ShapePopulationQT::slot_viewup_vy_valueChanged(double arg1)
 {
     double * viewup = m_headcam->GetViewUp();
     m_headcam->SetViewUp(viewup[0],arg1,viewup[2]);
-    m_renderAllSelection = true;
     this->RenderSelection();
-    m_renderAllSelection = false;
 }
 void ShapePopulationQT::slot_viewup_vz_valueChanged(double arg1)
 {
     double * viewup = m_headcam->GetViewUp();
     m_headcam->SetViewUp(viewup[0],viewup[1],arg1);
-    m_renderAllSelection = true;
     this->RenderSelection();
-    m_renderAllSelection = false;
 }
 void ShapePopulationQT::slot_scale_valueChanged(double arg1)
 {
     m_headcam->SetParallelScale(arg1);
-    m_renderAllSelection = true;
     this->RenderSelection();
-    m_renderAllSelection = false;
 }
 
 void ShapePopulationQT::slot_newCameraConfig(cameraConfigStruct cam)
@@ -927,9 +907,7 @@ void ShapePopulationQT::slot_newCameraConfig(cameraConfigStruct cam)
     m_headcam->SetFocalPoint(cam.foc_x,cam.foc_y,cam.foc_z);
     m_headcam->SetViewUp(cam.view_vx,cam.view_vy,cam.view_vz);
     m_headcam->SetParallelScale(cam.scale);
-    m_renderAllSelection = true;
     this->RenderSelection();
-    m_renderAllSelection = false;
 }
 
 // * ///////////////////////////////////////////////////////////////////////////////////////////// * //
@@ -1003,8 +981,6 @@ void ShapePopulationQT::CreateWidgets(const QList<vtkRenderWindow*>& renderWindo
         meshWidget->GetInteractor()->AddObserver(vtkCommand::LeftButtonPressEvent, this, &ShapePopulationQT::ClickEvent);
         meshWidget->GetInteractor()->AddObserver(vtkCommand::KeyPressEvent, this, &ShapePopulationBase::KeyPressEventVTK);
         meshWidget->GetInteractor()->AddObserver(vtkCommand::ModifiedEvent, this, &ShapePopulationBase::CameraChangedEventVTK);
-        meshWidget->GetInteractor()->AddObserver(vtkCommand::StartInteractionEvent, this, &ShapePopulationBase::StartEventVTK);
-        meshWidget->GetInteractor()->AddObserver(vtkCommand::EndInteractionEvent, this, &ShapePopulationBase::EndEventVTK);
     }
 
     /* WINDOWS */
@@ -1449,9 +1425,7 @@ void ShapePopulationQT::SelectAll()
     this->UpdateColorMapByMagnitude(m_selectedIndex);
 
     // Render
-    m_renderAllSelection = true;
     this->RenderSelection();
-    m_renderAllSelection = false;
 
     /* DISPLAY INFOS */
     this->updateInfo_QT();
@@ -1715,9 +1689,7 @@ void ShapePopulationQT::on_pushButton_VIEW_reset_clicked()
 
     this->ResetHeadcam();
 
-    m_renderAllSelection = true;
     this->RenderSelection();
-    m_renderAllSelection = false;
 }
 
 void ShapePopulationQT::on_toolButton_VIEW_P_clicked() {ChangeView(0,-1,0,0,0,1);}
@@ -1825,9 +1797,7 @@ void ShapePopulationQT::on_comboBox_VISU_attribute_currentIndexChanged(int)
         }
 
         // Render
-        m_renderAllSelection = true;
         this->RenderSelection();
-        m_renderAllSelection = false;
     }
 }
 
